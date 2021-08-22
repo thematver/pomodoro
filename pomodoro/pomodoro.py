@@ -39,6 +39,9 @@ class Pomodoro:
         elif type == PomodoroType.BREAK:
             return int(self.config.get("pomodoro", "break_time"))
 
+    def get_total_time(self):
+        return self.pomodoro_count*self.get_time(PomodoroType.WORK)
+
     def start(self):
         os.system("clear")
         print(strings.hello.format(self.get_time(PomodoroType.WORK)/60, self.get_time(PomodoroType.BREAK)/60, self.get_time(PomodoroType.REST)/60))
@@ -47,8 +50,8 @@ class Pomodoro:
             command = input()
             if command.strip().lower() == "start":
                 self.pomodoro()
-            elif command.strip().lower() == "end":
-                print("Пока!")
+            elif command.strip().lower() == "exit":
+                print(f"За сеанс ты отработал {timedelta(self.get_total_time())}. Пока!")
                 break
             elif command.strip().lower() == "info":
                 self.info()
@@ -61,9 +64,9 @@ class Pomodoro:
                 message = self.get_ending_string(self.current_pomodoro)
                 self.notification("Ваш помидор", message)
                 print(message)
-                self.pomodoro_count += 1
                 break
             else:
+                os.system("clear")
                 sys.stdout.write("\r\033[1mТекущий помодор {0}: {1}/{2}\033[0m".format(self.get_current_pomodoro_name(), str(timedelta(seconds=time.time()-timing))[:7], timedelta(seconds=self.get_time(self.current_pomodoro))))
                 sys.stdout.flush()
                 time.sleep(0.5)
@@ -73,6 +76,7 @@ class Pomodoro:
         print("\033[1mИнформация\033[0m")
         print(f"\033[1mТекущий помодор\033[0m: {self.get_current_pomodoro_name()}")
         print(f"\033[1mВсего помидоров выполнено\033[0m: {self.pomodoro_count}")
+        print(f"\033[1mОтработано: \033[0m{self.get_total_time()}")
 
     def get_ending_string(self, type: PomodoroType):
         if (type == PomodoroType.WORK):
