@@ -128,3 +128,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 pomodoro/.DS_Store
+.vscode/
+.vscode
