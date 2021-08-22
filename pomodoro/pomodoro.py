@@ -3,24 +3,18 @@ from enum import Enum
 import configparser
 import sys
 from datetime import timedelta
-from pydub import AudioSegment
-from pydub.playback import play
 import platform
 import os
 
 
 class PomodoroType(Enum):
-    
     WORK = 1
     BREAK = 2
     REST = 3
-
-
 class Pomodoro:
     config = configparser.ConfigParser()
     current_pomodoro = PomodoroType.WORK
     pomodoro_count = 0
-    song = AudioSegment.from_wav("timer.wav")
     def __init__(self) -> None:
         self.current_pomodoro: PomodoroType = PomodoroType.WORK
         self.config.read('config.cfg')
@@ -90,11 +84,6 @@ class Pomodoro:
             command = f'''
 osascript -e 'display notification "{message}" with title "{title}"'
 '''
-        else:
-            import win10toast
-            toaster = win10toast.ToastNotifier()
-            win10toast.ToastNotifier().show_toast(title, message)
-            return
         os.system(command)
 
 if __name__ == "__main__":
