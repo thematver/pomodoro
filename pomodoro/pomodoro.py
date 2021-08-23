@@ -21,7 +21,7 @@ class Pomodoro:
 
     def __init__(self) -> None:
         self.current_pomodoro: PomodoroType = PomodoroType.WORK
-        self.config.read('config.cfg')
+        self.config.read('/Users/work/Binaries/pomodoro/pomodoro/config.cfg')
 
     def get_current_pomodoro_name(self):
         if self.current_pomodoro == PomodoroType.WORK:
@@ -31,30 +31,40 @@ class Pomodoro:
         else:
             return "Перерыв"
 
+    def first_time(self):
+        if int(self.config.get("pomodoro", "first_time")) == 1:
+            self.config['pomodoro']['first_time'] = "0"
+            with open('/Users/work/Binaries/pomodoro/pomodoro/config.cfg', 'w') as configfile:
+                self.config.write(configfile)
+            self.settings()
+
     def get_time(self, type: PomodoroType):
         if type == PomodoroType.WORK:
-            return int(self.config.get("pomodoro", "work_time"))
+            return int(self.config.get("pomodoro", "work_time"))*60
         elif type == PomodoroType.REST:
-            return int(self.config.get("pomodoro", "rest_time"))
+            return int(self.config.get("pomodoro", "rest_time"))*60
         elif type == PomodoroType.BREAK:
-            return int(self.config.get("pomodoro", "break_time"))
+            return int(self.config.get("pomodoro", "break_time"))*60
 
     def get_total_time(self):
-        return self.pomodoro_count*self.get_time(PomodoroType.WORK)
+        return f"{self.pomodoro_count*self.get_time(PomodoroType.WORK)/60} часов и {self.pomodoro_count*self.get_time(PomodoroType.WORK)%60} минут"
 
     def start(self):
-        os.system("clear")
-        print(strings.hello.format(self.get_time(PomodoroType.WORK)/60, self.get_time(PomodoroType.BREAK)/60, self.get_time(PomodoroType.REST)/60))
-        print(strings.start)
         while True:
-            command = input()
+            self.first_time()
+            os.system("clear")
+            print(strings.hello.format(self.get_time(PomodoroType.WORK)/60, self.get_time(PomodoroType.BREAK)/60, self.get_time(PomodoroType.REST)/60))
+            print(strings.start)
+            command = input("Введите команду: ")
             if command.strip().lower() == "start":
                 self.pomodoro()
             elif command.strip().lower() == "exit":
-                print(f"За сеанс ты отработал {timedelta(self.get_total_time())}. Пока!")
+                print(f"За сеанс ты отработал {self.get_total_time()}. Пока!")
                 break
             elif command.strip().lower() == "info":
                 self.info()
+            elif command.strip().lower() == "settings":
+                self.settings()
 
     def pomodoro(self):
         os.system("clear")
@@ -102,8 +112,27 @@ class Pomodoro:
         if platform.system() == "Linux":
             command = f'notify-send {message} {title}'
         elif platform.system() == "Darwin":
-            command = f'''osascript -e 'display notification "{message}" with title "{title}"'''
+            command = f"osascript -e 'display notification \"{message}\" with title \"{title}\" sound name \"Sonar\"'"
         os.system(command)
+
+    def settings(self):
+        while True:
+            os.system("clear")
+            print("\033[1mHастройки\033[0m")
+            print("Напишите название переменной и значение, которое хотите установить (в минутах). Например, rest_time 50000000")
+            print("\n")
+            print(f"work_time: {self.get_time(PomodoroType.WORK)/60}")
+            print(f"break_time: {self.get_time(PomodoroType.BREAK)/60}")
+            print(f"rest_time: {self.get_time(PomodoroType.REST)/60}")
+            print("\n")
+            print("\n")
+            inp = input("Ввод > ")
+            if (inp == "exit"):
+                break
+            key, value = inp.split()
+            self.config['pomodoro'][key] = str(value)
+            with open('/Users/work/Binaries/pomodoro/pomodoro/config.cfg', 'w') as configfile:
+                self.config.write(configfile)
 
 
 if __name__ == "__main__":
